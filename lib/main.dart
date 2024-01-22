@@ -12,7 +12,7 @@ void main() {
           create: (context) => ThemeProvider(),
         ),
         ChangeNotifierProvider(
-          create: (context) => MusicProvider(),
+          create: (context) => SongProvider(),
         ),
       ],
       child: const MyApp(),

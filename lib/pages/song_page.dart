@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musick_app/components/neu_box.dart';
 import 'package:musick_app/models/songs_provider.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
 class SongPage extends StatelessWidget {
@@ -8,7 +9,7 @@ class SongPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<MusicProvider>(
+    return Consumer<SongProvider>(
       builder: (context, value, child) {
         final songs = value.songs;
         final currentSong = songs[value.currentSongIndex ?? 0];
@@ -42,10 +43,18 @@ class SongPage extends StatelessWidget {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(currentSong.albumArtImagePath),
+                          child: QueryArtworkWidget(
+                            id: currentSong.id,
+                            type: ArtworkType.AUDIO,
+                            artworkQuality: FilterQuality.none,
+                            artworkBorder: BorderRadius.zero,
+                            artworkFit: BoxFit.cover,
+                            artworkWidth: MediaQuery.of(context).size.width,
+                            artworkHeight: MediaQuery.of(context).size.width,
+                          ),
                         ),
                         Padding(
-                          padding: EdgeInsets.all(15),
+                          padding: const EdgeInsets.all(15),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
@@ -53,13 +62,13 @@ class SongPage extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    currentSong.songName,
-                                    style: TextStyle(
+                                    currentSong.title,
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 20,
                                     ),
                                   ),
-                                  Text(currentSong.artistName)
+                                  Text(currentSong.artist ?? "NN")
                                 ],
                               ),
                             ],
