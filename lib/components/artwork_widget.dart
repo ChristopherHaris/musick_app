@@ -10,26 +10,18 @@ class ArtworkWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _ArtworkWidgetContent(); // Use const constructor here
-  }
-}
-
-class _ArtworkWidgetContent extends StatelessWidget {
-  const _ArtworkWidgetContent({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final value = context.read<SongProvider>();
-    final currentSong = value.songs[value.currentSongIndex ?? 0];
-
-    return QueryArtworkWidget(
-      id: currentSong.id,
-      type: ArtworkType.AUDIO,
-      artworkQuality: FilterQuality.none,
-      artworkBorder: BorderRadius.zero,
-      artworkFit: BoxFit.cover,
-      artworkWidth: MediaQuery.of(context).size.width,
-      artworkHeight: MediaQuery.of(context).size.width,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: QueryArtworkWidget(
+        key: ValueKey<int>(songId),
+        id: songId,
+        type: ArtworkType.AUDIO,
+        artworkQuality: FilterQuality.none,
+        artworkBorder: BorderRadius.zero,
+        artworkFit: BoxFit.cover,
+        artworkWidth: MediaQuery.of(context).size.width,
+        artworkHeight: MediaQuery.of(context).size.width,
+      ),
     );
   }
 }

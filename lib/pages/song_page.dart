@@ -2,11 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:musick_app/components/artwork_widget.dart';
 import 'package:musick_app/components/neu_box.dart';
 import 'package:musick_app/models/songs_provider.dart';
-import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
 class SongPage extends StatelessWidget {
   const SongPage({super.key});
+
+  String formatTime(Duration duration) {
+    String twoDigitSeconds =
+        duration.inSeconds.remainder(60).toString().padLeft(2, "0");
+    String formattedTime = "${duration.inMinutes}:$twoDigitSeconds";
+
+    return formattedTime;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,10 +94,10 @@ class SongPage extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(value.currentDuration.toString()),
+                            Text(formatTime(value.currentDuration)),
                             Icon(Icons.shuffle),
                             Icon(Icons.repeat),
-                            Text(value.totalDuration.toString()),
+                            Text(formatTime(value.totalDuration)),
                           ],
                         ),
                       ),

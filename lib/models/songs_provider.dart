@@ -101,6 +101,7 @@ class SongProvider with ChangeNotifier {
 
   void playPreviousSong() async {
     if (_currentDuration.inSeconds > 2) {
+      seek(Duration.zero);
     } else {
       if (_currentSongIndex! > 0) {
         currentSongIndex = _currentSongIndex! - 1;
