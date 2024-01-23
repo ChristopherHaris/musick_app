@@ -21,7 +21,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     // Load songs when the widget is initialized
-    requestStoragePermission();
     songProvider = Provider.of<SongProvider>(context, listen: false);
     songProvider.loadSongs();
   }
@@ -95,7 +94,6 @@ class _HomePageState extends State<HomePage> {
       if (!permissionStatus) {
         await _audioQuery.permissionsRequest();
       }
-      setState(() {});
     }
   }
 }
