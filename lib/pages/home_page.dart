@@ -44,8 +44,9 @@ class _HomePageState extends State<HomePage> {
         title: const Text("S O N G S"),
       ),
       drawer: const MyDrawer(),
-      body: Consumer<SongProvider>(
-        builder: (context, songProvider, child) {
+      body: Selector<SongProvider, List<SongModel>>(
+        selector: (context, songProvider) => songProvider.songs,
+        builder: (context, songs, child) {
           if (songProvider.songs.isEmpty) {
             return const Center(
               child: CircularProgressIndicator(),
@@ -55,11 +56,11 @@ class _HomePageState extends State<HomePage> {
             itemCount: songProvider.songs.length,
             itemBuilder: (context, index) {
               return ListTile(
-                  title: Text(songProvider.songs[index].title),
-                  subtitle: Text(songProvider.songs[index].displayName),
+                  title: Text(songs[index].title),
+                  subtitle: Text(songs[index].displayName),
                   trailing: const Icon(Icons.more_vert),
                   leading: QueryArtworkWidget(
-                    id: songProvider.songs[index].id,
+                    id: songs[index].id,
                     type: ArtworkType.AUDIO,
                   ),
                   onTap: () => goToSong(index));
@@ -69,24 +70,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
-  // Consumer<MusicProvider>(
-  //   builder: (context, value, child) {
-  //     final List<Song> songs = value.songs;
-  //     return ListView.builder(
-  //       itemCount: value.songs.length,
-  //       itemBuilder: (context, index) {
-  //         final Song song = songs[index];
-  //         return ListTile(
-  //           title: Text(song.songName),
-  //           subtitle: Text(song.artistName),
-  //           leading: Image.asset(song.albumArtImagePath),
-  //           onTap: () => goToSong(index),
-  //         );
-  //       },
-  //     );
-  //   },
-  // ),
 
   void requestStoragePermission() async {
     if (!kIsWeb) {

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -6,6 +8,7 @@ class SongProvider with ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final OnAudioQuery audioQuery = OnAudioQuery();
   List<SongModel> _songs = [];
+  Map<int, Uint8List?> _artworkCache = {};
   int? _currentSongIndex = 0;
   bool _isPlaying = false;
   Duration _currentDuration = Duration.zero;
@@ -31,26 +34,45 @@ class SongProvider with ChangeNotifier {
     }
   }
 
+  Future<Uint8List?> loadArtwork(int songId) async {
+    if (_artworkCache.containsKey(songId)) {
+      return _artworkCache[songId];
+    }
+
+    try {
+      Uint8List? artwork = await audioQuery.queryArtwork(
+          songId, ArtworkType.AUDIO,
+          size: 300, format: ArtworkFormat.JPEG, quality: 100);
+
+      _artworkCache[songId] = artwork;
+      return artwork;
+    } catch (e) {
+      print("Error loading artwork: $e");
+      return null;
+    }
+  }
+
   SongProvider() {
-    // listenToDuration();
+    listenToDuration();
   }
 
   void play() async {
     final String? contentUri = _songs[currentSongIndex!].uri;
-
+    _isPlaying = true;
     await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(contentUri!)));
     await _audioPlayer.play();
+    notifyListeners();
   }
 
   void pause() async {
-    await _audioPlayer.pause();
     _isPlaying = false;
+    await _audioPlayer.pause();
     notifyListeners();
   }
 
   void resume() async {
-    await _audioPlayer.play();
     _isPlaying = true;
+    await _audioPlayer.play();
     notifyListeners();
   }
 
@@ -88,19 +110,19 @@ class SongProvider with ChangeNotifier {
     }
   }
 
-  // void listenToDuration() {
-  //   _audioPlayer.onDurationChanged.listen((newDuration) {
-  //     _totalDuration = newDuration;
-  //     notifyListeners();
-  //   });
+  void listenToDuration() {
+    _audioPlayer.durationStream.listen((newDuration) {
+      _totalDuration = newDuration!;
+      notifyListeners();
+    });
 
-  //   _audioPlayer.onPositionChanged.listen((newPosition) {
-  //     _currentDuration = newPosition;
-  //     notifyListeners();
-  //   });
+    _audioPlayer.positionStream.listen((newPosition) {
+      _currentDuration = newPosition;
+      notifyListeners();
+    });
 
-  //   _audioPlayer.onPlayerComplete.listen((event) {});
-  // }
+    // _audioPlayer..listen((event) {});
+  }
 
   List<SongModel> get songs => _songs;
   int? get currentSongIndex => _currentSongIndex;

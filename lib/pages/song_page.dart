@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musick_app/components/artwork_widget.dart';
 import 'package:musick_app/components/neu_box.dart';
 import 'package:musick_app/models/songs_provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -43,15 +44,7 @@ class SongPage extends StatelessWidget {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: QueryArtworkWidget(
-                            id: currentSong.id,
-                            type: ArtworkType.AUDIO,
-                            artworkQuality: FilterQuality.none,
-                            artworkBorder: BorderRadius.zero,
-                            artworkFit: BoxFit.cover,
-                            artworkWidth: MediaQuery.of(context).size.width,
-                            artworkHeight: MediaQuery.of(context).size.width,
-                          ),
+                          child: ArtworkWidget(songId: currentSong.id),
                         ),
                         Padding(
                           padding: const EdgeInsets.all(15),
@@ -89,15 +82,15 @@ class SongPage extends StatelessWidget {
                   ),
                   Column(
                     children: [
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 25.0),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 25.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text("0:00"),
+                            Text(value.currentDuration.toString()),
                             Icon(Icons.shuffle),
                             Icon(Icons.repeat),
-                            Text("0:00")
+                            Text(value.totalDuration.toString()),
                           ],
                         ),
                       ),
@@ -108,10 +101,13 @@ class SongPage extends StatelessWidget {
                         ),
                         child: Slider(
                           min: 0,
-                          max: 100,
-                          value: 50,
+                          max: value.totalDuration.inSeconds.toDouble(),
+                          value: value.currentDuration.inSeconds.toDouble(),
                           activeColor: Colors.blue,
-                          onChanged: (value) {},
+                          onChanged: (double double) {},
+                          onChangeEnd: (double double) {
+                            value.seek(Duration(seconds: double.toInt()));
+                          },
                         ),
                       ),
                     ],
@@ -121,7 +117,7 @@ class SongPage extends StatelessWidget {
                     children: [
                       Expanded(
                         child: GestureDetector(
-                          onTap: () {},
+                          onTap: value.playPreviousSong,
                           child: const NeuBox(
                             child: Icon(Icons.skip_previous),
                           ),
@@ -131,16 +127,18 @@ class SongPage extends StatelessWidget {
                       Expanded(
                         flex: 2,
                         child: GestureDetector(
-                          onTap: () {},
-                          child: const NeuBox(
-                            child: Icon(Icons.play_arrow),
+                          onTap: value.pauseOrResume,
+                          child: NeuBox(
+                            child: Icon(value.isPlaying
+                                ? Icons.pause
+                                : Icons.play_arrow),
                           ),
                         ),
                       ),
                       const SizedBox(width: 20),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () {},
+                          onTap: value.playNextSong,
                           child: const NeuBox(
                             child: Icon(Icons.skip_next),
                           ),
