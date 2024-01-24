@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:musick_app/components/artwork_widget.dart';
 import 'package:musick_app/components/neu_box.dart';
 import 'package:musick_app/models/songs_provider.dart';
@@ -21,7 +22,6 @@ class SongPage extends StatelessWidget {
       builder: (context, value, child) {
         final songs = value.songs;
         final currentSong = songs[value.currentSongIndex ?? 0];
-
         return Scaffold(
           backgroundColor: Theme.of(context).colorScheme.background,
           body: SafeArea(
@@ -49,9 +49,14 @@ class SongPage extends StatelessWidget {
                   NeuBox(
                     child: Column(
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: ArtworkWidget(songId: currentSong.id),
+                        Builder(
+                          builder: (context) => ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: ArtworkWidget(
+                              songId: currentSong.id,
+                              key: ValueKey<int>(currentSong.id),
+                            ),
+                          ),
                         ),
                         Padding(
                           padding: const EdgeInsets.all(15),
@@ -87,37 +92,58 @@ class SongPage extends StatelessWidget {
                   const SizedBox(
                     height: 25,
                   ),
-                  Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  StreamBuilder<Duration>(
+                    stream: context.read<SongProvider>().durationStream,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        Duration currentDuration = snapshot.data!;
+                        Duration totalDuration =
+                            context.read<SongProvider>().totalDuration;
+
+                        return Column(
                           children: [
-                            Text(formatTime(value.currentDuration)),
-                            Icon(Icons.shuffle),
-                            Icon(Icons.repeat),
-                            Text(formatTime(value.totalDuration)),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 25.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(formatTime(currentDuration)),
+                                  Icon(Icons.shuffle),
+                                  Icon(Icons.repeat),
+                                  Text(formatTime(totalDuration)),
+                                ],
+                              ),
+                            ),
+                            SliderTheme(
+                              data: SliderTheme.of(context).copyWith(
+                                thumbShape: const RoundSliderThumbShape(
+                                    enabledThumbRadius: 0),
+                              ),
+                              child: Slider(
+                                min: 0,
+                                max: totalDuration.inSeconds.toDouble(),
+                                value: currentDuration.inSeconds.toDouble(),
+                                activeColor: Colors.blue,
+                                onChanged: (double double) {},
+                                onChangeEnd: (double double) {
+                                  context
+                                      .read<SongProvider>()
+                                      .seek(Duration(seconds: double.toInt()));
+                                },
+                              ),
+                            ),
                           ],
-                        ),
-                      ),
-                      SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                          thumbShape: const RoundSliderThumbShape(
-                              enabledThumbRadius: 0),
-                        ),
-                        child: Slider(
-                          min: 0,
-                          max: value.totalDuration.inSeconds.toDouble(),
-                          value: value.currentDuration.inSeconds.toDouble(),
-                          activeColor: Colors.blue,
-                          onChanged: (double double) {},
-                          onChangeEnd: (double double) {
-                            value.seek(Duration(seconds: double.toInt()));
-                          },
-                        ),
-                      ),
-                    ],
+                        );
+                      } else if (snapshot.hasError) {
+                        // Handle error
+                        return Text('Error: ${snapshot.error}');
+                      } else {
+                        // Data is still loading
+                        return CircularProgressIndicator();
+                      }
+                    },
                   ),
                   const SizedBox(height: 10),
                   Row(

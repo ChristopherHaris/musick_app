@@ -38,7 +38,6 @@ dependencies:
   on_audio_query: ^2.9.0
   permission_handler: ^11.0.1
   just_audio: ^0.9.36
-  quiver: ^3.0.0
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,4 @@
-import 'dart:typed_data';
-
+import 'dart:async';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -8,7 +7,7 @@ class SongProvider with ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final OnAudioQuery audioQuery = OnAudioQuery();
   List<SongModel> _songs = [];
-  Map<int, Uint8List?> _artworkCache = {};
+  late StreamController<Duration> _durationController;
   int? _currentSongIndex = 0;
   bool _isPlaying = false;
   Duration _currentDuration = Duration.zero;
@@ -34,25 +33,9 @@ class SongProvider with ChangeNotifier {
     }
   }
 
-  Future<Uint8List?> loadArtwork(int songId) async {
-    if (_artworkCache.containsKey(songId)) {
-      return _artworkCache[songId];
-    }
-
-    try {
-      Uint8List? artwork = await audioQuery.queryArtwork(
-          songId, ArtworkType.AUDIO,
-          size: 300, format: ArtworkFormat.JPEG, quality: 100);
-
-      _artworkCache[songId] = artwork;
-      return artwork;
-    } catch (e) {
-      print("Error loading artwork: $e");
-      return null;
-    }
-  }
-
   SongProvider() {
+    _durationController = StreamController<Duration>.broadcast();
+    _durationController.onListen = listenToDuration;
     listenToDuration();
   }
 
@@ -114,11 +97,13 @@ class SongProvider with ChangeNotifier {
   void listenToDuration() {
     _audioPlayer.durationStream.listen((newDuration) {
       _totalDuration = newDuration!;
+      _durationController.add(_totalDuration); // Stream total duration
       notifyListeners();
     });
 
     _audioPlayer.positionStream.listen((newPosition) {
       _currentDuration = newPosition;
+      _durationController.add(_currentDuration); // Stream current duration
       notifyListeners();
     });
 
@@ -130,6 +115,7 @@ class SongProvider with ChangeNotifier {
   bool get isPlaying => _isPlaying;
   Duration get currentDuration => _currentDuration;
   Duration get totalDuration => _totalDuration;
+  Stream<Duration> get durationStream => _durationController.stream;
 
   set songs(List<SongModel> songs) {
     _songs = songs;
@@ -143,5 +129,12 @@ class SongProvider with ChangeNotifier {
       play();
     }
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    _durationController.close();
+    super.dispose();
   }
 }
