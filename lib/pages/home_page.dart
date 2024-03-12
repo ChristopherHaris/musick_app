@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:musick_app/components/artwork_widget.dart';
 import 'package:musick_app/models/songs_provider.dart';
 import 'package:musick_app/pages/song_page.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -27,47 +28,194 @@ class _HomePageState extends State<HomePage> {
 
   void goToSong(int songIndex) {
     songProvider.currentSongIndex = songIndex;
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const SongPage(),
-      ),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return const SongPage();
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
-      appBar: AppBar(
-        title: const Text("S O N G S"),
-      ),
-      drawer: const MyDrawer(),
-      body: Selector<SongProvider, List<SongModel>>(
-        selector: (context, songProvider) => songProvider.songs,
-        builder: (context, songs, child) {
-          if (songProvider.songs.isEmpty) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-          return ListView.builder(
-            itemCount: songProvider.songs.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                  title: Text(songs[index].title),
-                  subtitle: Text(songs[index].displayName),
-                  trailing: const Icon(Icons.more_vert),
-                  leading: QueryArtworkWidget(
-                    id: songs[index].id,
-                    type: ArtworkType.AUDIO,
-                  ),
-                  onTap: () => goToSong(index));
+    return Stack(
+      alignment: Alignment.bottomCenter,
+      children: [
+        Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.background,
+          appBar: AppBar(
+            title: const Text("S O N G S"),
+          ),
+          drawer: const MyDrawer(),
+          body: Selector<SongProvider, List<SongModel>>(
+            selector: (context, songProvider) => songProvider.songs,
+            builder: (context, songs, child) {
+              if (songProvider.songs.isEmpty) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              return ListView.builder(
+                itemCount: songProvider.songs.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                      title: Text(songs[index].title),
+                      subtitle: Text(songs[index].displayName),
+                      trailing: const Icon(Icons.more_vert),
+                      leading: QueryArtworkWidget(
+                        id: songs[index].id,
+                        type: ArtworkType.AUDIO,
+                      ),
+                      onTap: () => goToSong(index));
+                },
+              );
             },
-          );
-        },
-      ),
+          ),
+        ),
+        Consumer<SongProvider>(
+          builder: (context, value, child) {
+            final songs = value.songs;
+            final currentSongIndex = value.currentSongIndex;
+            if (currentSongIndex != null && currentSongIndex < songs.length) {
+              final currentSong = songs[currentSongIndex];
+              return GestureDetector(
+                onVerticalDragStart: (detail) => goToSong(currentSongIndex),
+                onTap: () => goToSong(currentSongIndex),
+                child: Container(
+                  height: 65,
+                  width: MediaQuery.of(context).size.width,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.secondary,
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(5)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 40,
+                              height: 40,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(5),
+                                child: ArtworkWidget(
+                                  songId: currentSong.id,
+                                  key: ValueKey<int>(currentSong.id),
+                                ),
+                              ),
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const SizedBox(
+                                  width: 15,
+                                ),
+                                Text(
+                                  currentSong.title,
+                                  style: TextStyle(
+                                    overflow: TextOverflow.ellipsis,
+                                    decoration: TextDecoration.none,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .inversePrimary,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 2,
+                                ),
+                                Text(
+                                  ".",
+                                  style: TextStyle(
+                                    overflow: TextOverflow.ellipsis,
+                                    height: 0.1,
+                                    decoration: TextDecoration.none,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 25,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .inversePrimary,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 2,
+                                ),
+                                Text(
+                                  currentSong.artist ?? "",
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    decoration: TextDecoration.none,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .inversePrimary,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ],
+                        ),
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            StreamBuilder<Duration>(
+                              stream:
+                                  context.read<SongProvider>().durationStream,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  Duration currentDuration = snapshot.data!;
+                                  Duration totalDuration = context
+                                      .read<SongProvider>()
+                                      .totalDuration;
+                                  double progress = totalDuration.inSeconds > 0
+                                      ? currentDuration.inSeconds /
+                                          totalDuration.inSeconds
+                                      : 0.0; // Set progress to zero if currentDuration or totalDuration is null or if totalDuration is zero
+
+                                  return CircularProgressIndicator.adaptive(
+                                    value: progress,
+                                    valueColor:
+                                        const AlwaysStoppedAnimation<Color>(
+                                            Colors.blue), // Set the color here
+                                  );
+                                } else if (snapshot.hasError) {
+                                  // Handle error
+                                  return Text('Error: ${snapshot.error}');
+                                } else {
+                                  // Data is still loading
+                                  return const CircularProgressIndicator();
+                                }
+                              },
+                            ),
+                            GestureDetector(
+                              onTap: value.pauseOrResume,
+                              child: Icon(
+                                value.isPlaying
+                                    ? Icons.pause
+                                    : Icons.play_arrow,
+                                size: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            } else {
+              return Container();
+            }
+          },
+        ),
+      ],
     );
   }
 

@@ -23,7 +23,6 @@ class SettingsPage extends StatelessWidget {
           children: [
             const Text("Dark Mode"),
             Switch(
-              activeColor: Colors.blue,
               value:
                   Provider.of<ThemeProvider>(context, listen: false).isDarkMode,
               onChanged: (value) =>

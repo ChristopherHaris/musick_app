@@ -36,7 +36,13 @@ class SongProvider with ChangeNotifier {
   SongProvider() {
     _durationController = StreamController<Duration>.broadcast();
     _durationController.onListen = listenToDuration;
+
     listenToDuration();
+    _audioPlayer.playerStateStream.listen((playerState) {
+      if (playerState.processingState == ProcessingState.completed) {
+        playNextSong();
+      }
+    });
   }
 
   void play() async {
@@ -123,9 +129,8 @@ class SongProvider with ChangeNotifier {
   }
 
   set currentSongIndex(int? newIndex) {
-    _currentSongIndex = newIndex;
-
-    if (newIndex != null) {
+    if (newIndex != null && newIndex != _currentSongIndex) {
+      _currentSongIndex = newIndex;
       play();
     }
     notifyListeners();

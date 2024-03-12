@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:musick_app/components/artwork_widget.dart';
 import 'package:musick_app/components/neu_box.dart';
 import 'package:musick_app/models/songs_provider.dart';
@@ -22,9 +21,12 @@ class SongPage extends StatelessWidget {
       builder: (context, value, child) {
         final songs = value.songs;
         final currentSong = songs[value.currentSongIndex ?? 0];
-        return Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.background,
-          body: SafeArea(
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.background,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.only(
                   left: 25, right: 25, bottom: 25, top: 10),
@@ -110,8 +112,8 @@ class SongPage extends StatelessWidget {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(formatTime(currentDuration)),
-                                  Icon(Icons.shuffle),
-                                  Icon(Icons.repeat),
+                                  const Icon(Icons.shuffle),
+                                  const Icon(Icons.repeat),
                                   Text(formatTime(totalDuration)),
                                 ],
                               ),
@@ -141,7 +143,7 @@ class SongPage extends StatelessWidget {
                         return Text('Error: ${snapshot.error}');
                       } else {
                         // Data is still loading
-                        return CircularProgressIndicator();
+                        return const CircularProgressIndicator();
                       }
                     },
                   ),
