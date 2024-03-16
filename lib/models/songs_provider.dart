@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -9,8 +10,11 @@ class SongProvider with ChangeNotifier {
   List<SongModel> _songs = [];
   int? _currentSongIndex;
   bool _isPlaying = false;
+  bool _isRandom = false;
+  bool _isRepeat = false;
   Duration _currentDuration = Duration.zero;
   Duration _totalDuration = Duration.zero;
+  Random random = Random();
 
   Future<void> loadSongs() async {
     bool permissionStatus = await audioQuery.permissionsStatus();
@@ -33,7 +37,6 @@ class SongProvider with ChangeNotifier {
   }
 
   SongProvider() {
-
     listenToDuration();
     _audioPlayer.playerStateStream.listen((playerState) {
       if (playerState.processingState == ProcessingState.completed) {
@@ -75,13 +78,29 @@ class SongProvider with ChangeNotifier {
     await _audioPlayer.seek(position);
   }
 
-  void playNextSong() {
-    if (_currentSongIndex != null) {
-      if (_currentSongIndex! < _songs.length - 1) {
-        currentSongIndex = _currentSongIndex! + 1;
+  void randomize() async {
+    _isRandom = !isRandom;
+    notifyListeners();
+  }
+
+  void repeat() async {
+    _isRepeat = !isRepeat;
+    notifyListeners();
+  }
+
+  void playNextSong() async {
+    if (_currentSongIndex! < _songs.length - 1) {
+      if (!isRepeat) {
+        if (isRandom) {
+          currentSongIndex = random.nextInt(_songs.length);
+        } else {
+          currentSongIndex = _currentSongIndex! + 1;
+        }
       } else {
-        currentSongIndex = 0;
+        play();
       }
+    } else {
+      currentSongIndex = 0;
     }
   }
 
@@ -114,6 +133,8 @@ class SongProvider with ChangeNotifier {
   List<SongModel> get songs => _songs;
   int? get currentSongIndex => _currentSongIndex;
   bool get isPlaying => _isPlaying;
+  bool get isRandom => _isRandom;
+  bool get isRepeat => _isRepeat;
   Duration get currentDuration => _currentDuration;
   Duration get totalDuration => _totalDuration;
 

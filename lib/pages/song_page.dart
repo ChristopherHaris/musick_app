@@ -108,8 +108,27 @@ class SongPage extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(formatTime(currentDuration)),
-                                const Icon(Icons.shuffle),
-                                const Icon(Icons.repeat),
+                                IconButton(
+                                    color: songProvider.isRandom
+                                        ? Colors.blue
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .inversePrimary,
+                                    isSelected: songProvider.isRandom,
+                                    onPressed: () {
+                                      songProvider.randomize();
+                                    },
+                                    icon: const Icon(Icons.shuffle)),
+                                IconButton(
+                                    color: songProvider.isRepeat
+                                        ? Colors.blue
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .inversePrimary,
+                                    onPressed: () {
+                                      songProvider.repeat();
+                                    },
+                                    icon: const Icon(Icons.repeat)),
                                 Text(formatTime(totalDuration)),
                               ],
                             ),
