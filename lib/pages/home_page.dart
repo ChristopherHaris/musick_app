@@ -165,33 +165,23 @@ class _HomePageState extends State<HomePage> {
                         Stack(
                           alignment: Alignment.center,
                           children: [
-                            StreamBuilder<Duration>(
-                              stream:
-                                  context.read<SongProvider>().durationStream,
-                              builder: (context, snapshot) {
-                                if (snapshot.hasData) {
-                                  Duration currentDuration = snapshot.data!;
-                                  Duration totalDuration = context
-                                      .read<SongProvider>()
-                                      .totalDuration;
-                                  double progress = totalDuration.inSeconds > 0
-                                      ? currentDuration.inSeconds /
-                                          totalDuration.inSeconds
-                                      : 0.0; // Set progress to zero if currentDuration or totalDuration is null or if totalDuration is zero
-
-                                  return CircularProgressIndicator.adaptive(
-                                    value: progress,
-                                    valueColor:
-                                        const AlwaysStoppedAnimation<Color>(
-                                            Colors.blue), // Set the color here
-                                  );
-                                } else if (snapshot.hasError) {
-                                  // Handle error
-                                  return Text('Error: ${snapshot.error}');
-                                } else {
-                                  // Data is still loading
-                                  return const CircularProgressIndicator();
-                                }
+                            Consumer<SongProvider>(
+                              builder: (context, songProvider, _) {
+                                Duration currentDuration =
+                                    songProvider.currentDuration;
+                                Duration totalDuration =
+                                    songProvider.totalDuration;
+                                double progress = totalDuration.inSeconds > 0
+                                    ? currentDuration.inSeconds /
+                                        totalDuration.inSeconds
+                                    : 0.0; // Set progress to zero if currentDuration or totalDuration is null or if totalDuration is zero
+                                return CircularProgressIndicator.adaptive(
+                                  value: progress,
+                                  valueColor:
+                                      const AlwaysStoppedAnimation<Color>(
+                                          Colors.blue),
+                                );
+                                // Data is still loading
                               },
                             ),
                             GestureDetector(

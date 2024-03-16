@@ -7,8 +7,7 @@ class SongProvider with ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final OnAudioQuery audioQuery = OnAudioQuery();
   List<SongModel> _songs = [];
-  late StreamController<Duration> _durationController;
-  int? _currentSongIndex = 0;
+  int? _currentSongIndex;
   bool _isPlaying = false;
   Duration _currentDuration = Duration.zero;
   Duration _totalDuration = Duration.zero;
@@ -34,8 +33,6 @@ class SongProvider with ChangeNotifier {
   }
 
   SongProvider() {
-    _durationController = StreamController<Duration>.broadcast();
-    _durationController.onListen = listenToDuration;
 
     listenToDuration();
     _audioPlayer.playerStateStream.listen((playerState) {
@@ -102,14 +99,12 @@ class SongProvider with ChangeNotifier {
 
   void listenToDuration() {
     _audioPlayer.durationStream.listen((newDuration) {
-      _totalDuration = newDuration!;
-      _durationController.add(_totalDuration); // Stream total duration
+      _totalDuration = newDuration!; // Stream total duration
       notifyListeners();
     });
 
     _audioPlayer.positionStream.listen((newPosition) {
-      _currentDuration = newPosition;
-      _durationController.add(_currentDuration); // Stream current duration
+      _currentDuration = newPosition; // Stream current duration
       notifyListeners();
     });
 
@@ -121,7 +116,6 @@ class SongProvider with ChangeNotifier {
   bool get isPlaying => _isPlaying;
   Duration get currentDuration => _currentDuration;
   Duration get totalDuration => _totalDuration;
-  Stream<Duration> get durationStream => _durationController.stream;
 
   set songs(List<SongModel> songs) {
     _songs = songs;
@@ -139,7 +133,6 @@ class SongProvider with ChangeNotifier {
   @override
   void dispose() {
     _audioPlayer.dispose();
-    _durationController.close();
     super.dispose();
   }
 }

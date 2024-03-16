@@ -94,57 +94,45 @@ class SongPage extends StatelessWidget {
                   const SizedBox(
                     height: 25,
                   ),
-                  StreamBuilder<Duration>(
-                    stream: context.read<SongProvider>().durationStream,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        Duration currentDuration = snapshot.data!;
-                        Duration totalDuration =
-                            context.read<SongProvider>().totalDuration;
+                  Consumer<SongProvider>(
+                    builder: (context, songProvider, _) {
+                      Duration currentDuration = songProvider.currentDuration;
+                      Duration totalDuration = songProvider.totalDuration;
 
-                        return Column(
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 25.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(formatTime(currentDuration)),
-                                  const Icon(Icons.shuffle),
-                                  const Icon(Icons.repeat),
-                                  Text(formatTime(totalDuration)),
-                                ],
-                              ),
+                      return Column(
+                        children: [
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 25.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(formatTime(currentDuration)),
+                                const Icon(Icons.shuffle),
+                                const Icon(Icons.repeat),
+                                Text(formatTime(totalDuration)),
+                              ],
                             ),
-                            SliderTheme(
-                              data: SliderTheme.of(context).copyWith(
-                                thumbShape: const RoundSliderThumbShape(
-                                    enabledThumbRadius: 0),
-                              ),
-                              child: Slider(
-                                min: 0,
-                                max: totalDuration.inSeconds.toDouble(),
-                                value: currentDuration.inSeconds.toDouble(),
-                                activeColor: Colors.blue,
-                                onChanged: (double double) {},
-                                onChangeEnd: (double double) {
-                                  context
-                                      .read<SongProvider>()
-                                      .seek(Duration(seconds: double.toInt()));
-                                },
-                              ),
+                          ),
+                          SliderTheme(
+                            data: SliderTheme.of(context).copyWith(
+                              thumbShape: const RoundSliderThumbShape(
+                                  enabledThumbRadius: 0),
                             ),
-                          ],
-                        );
-                      } else if (snapshot.hasError) {
-                        // Handle error
-                        return Text('Error: ${snapshot.error}');
-                      } else {
-                        // Data is still loading
-                        return const CircularProgressIndicator();
-                      }
+                            child: Slider(
+                              min: 0,
+                              max: totalDuration.inSeconds.toDouble(),
+                              value: currentDuration.inSeconds.toDouble(),
+                              activeColor: Colors.blue,
+                              onChanged: (double double) {},
+                              onChangeEnd: (double double) {
+                                songProvider
+                                    .seek(Duration(seconds: double.toInt()));
+                              },
+                            ),
+                          ),
+                        ],
+                      );
                     },
                   ),
                   const SizedBox(height: 10),
