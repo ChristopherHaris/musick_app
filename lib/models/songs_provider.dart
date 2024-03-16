@@ -85,19 +85,20 @@ class SongProvider with ChangeNotifier {
 
   void repeat() async {
     _isRepeat = !isRepeat;
+    if (_isRepeat) {
+      _audioPlayer.setLoopMode(LoopMode.one);
+    } else {
+      _audioPlayer.setLoopMode(LoopMode.off);
+    }
     notifyListeners();
   }
 
   void playNextSong() async {
     if (_currentSongIndex! < _songs.length - 1) {
-      if (!isRepeat) {
-        if (isRandom) {
-          currentSongIndex = random.nextInt(_songs.length);
-        } else {
-          currentSongIndex = _currentSongIndex! + 1;
-        }
+      if (isRandom) {
+        currentSongIndex = random.nextInt(_songs.length);
       } else {
-        play();
+        currentSongIndex = _currentSongIndex! + 1;
       }
     } else {
       currentSongIndex = 0;
