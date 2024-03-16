@@ -79,23 +79,23 @@ class _HomePageState extends State<HomePage> {
             final currentSongIndex = value.currentSongIndex;
             if (currentSongIndex != null && currentSongIndex < songs.length) {
               final currentSong = songs[currentSongIndex];
-              return GestureDetector(
-                onVerticalDragStart: (detail) => goToSong(currentSongIndex),
-                onTap: () => goToSong(currentSongIndex),
-                child: Container(
-                  height: 65,
-                  width: MediaQuery.of(context).size.width,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondary,
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(5)),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
+              return Stack(
+                alignment: Alignment.centerRight,
+                children: [
+                  GestureDetector(
+                    onVerticalDragStart: (detail) => goToSong(currentSongIndex),
+                    onTap: () => goToSong(currentSongIndex),
+                    child: Container(
+                      height: 65,
+                      width: MediaQuery.of(context).size.width,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.secondary,
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(5)),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             SizedBox(
@@ -118,7 +118,7 @@ class _HomePageState extends State<HomePage> {
                                 Text(
                                   currentSong.title,
                                   style: TextStyle(
-                                    overflow: TextOverflow.ellipsis,
+                                    overflow: TextOverflow.fade,
                                     decoration: TextDecoration.none,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 13,
@@ -133,7 +133,7 @@ class _HomePageState extends State<HomePage> {
                                 Text(
                                   ".",
                                   style: TextStyle(
-                                    overflow: TextOverflow.ellipsis,
+                                    overflow: TextOverflow.fade,
                                     height: 0.1,
                                     decoration: TextDecoration.none,
                                     fontWeight: FontWeight.bold,
@@ -146,59 +146,65 @@ class _HomePageState extends State<HomePage> {
                                 const SizedBox(
                                   width: 2,
                                 ),
-                                Text(
-                                  currentSong.artist ?? "",
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    decoration: TextDecoration.none,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .inversePrimary,
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width - 320,
+                                  child: Text(
+                                    currentSong.artist ?? "",
+                                    overflow: TextOverflow.fade,
+                                    maxLines: 1,
+                                    softWrap: false,
+                                    style: TextStyle(
+                                      decoration: TextDecoration.none,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .inversePrimary,
+                                    ),
                                   ),
                                 )
                               ],
                             ),
                           ],
                         ),
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Consumer<SongProvider>(
-                              builder: (context, songProvider, _) {
-                                Duration currentDuration =
-                                    songProvider.currentDuration;
-                                Duration totalDuration =
-                                    songProvider.totalDuration;
-                                double progress = totalDuration.inSeconds > 0
-                                    ? currentDuration.inSeconds /
-                                        totalDuration.inSeconds
-                                    : 0.0; // Set progress to zero if currentDuration or totalDuration is null or if totalDuration is zero
-                                return CircularProgressIndicator.adaptive(
-                                  value: progress,
-                                  valueColor:
-                                      const AlwaysStoppedAnimation<Color>(
-                                          Colors.blue),
-                                );
-                                // Data is still loading
-                              },
-                            ),
-                            GestureDetector(
-                              onTap: value.pauseOrResume,
-                              child: Icon(
-                                value.isPlaying
-                                    ? Icons.pause
-                                    : Icons.play_arrow,
-                                size: 20,
-                              ),
-                            ),
-                          ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Consumer<SongProvider>(
+                          builder: (context, songProvider, _) {
+                            Duration currentDuration =
+                                songProvider.currentDuration;
+                            Duration totalDuration = songProvider.totalDuration;
+                            double progress = totalDuration.inSeconds > 0
+                                ? currentDuration.inSeconds /
+                                    totalDuration.inSeconds
+                                : 0.0; // Set progress to zero if currentDuration or totalDuration is null or if totalDuration is zero
+                            return CircularProgressIndicator.adaptive(
+                              value: progress,
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                  Colors.blue),
+                            );
+                            // Data is still loading
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(
+                              value.isPlaying ? Icons.pause : Icons.play_arrow),
+                          iconSize: 20,
+                          onPressed: () {
+                            value.pauseOrResume();
+                          },
                         ),
                       ],
                     ),
                   ),
-                ),
+                ],
               );
             } else {
               return Container();
