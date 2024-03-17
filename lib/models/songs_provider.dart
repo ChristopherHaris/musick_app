@@ -80,6 +80,7 @@ class SongProvider with ChangeNotifier {
 
   void randomize() async {
     _isRandom = !isRandom;
+    _audioPlayer.setShuffleModeEnabled(isRandom);
     notifyListeners();
   }
 
